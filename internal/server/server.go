@@ -66,7 +66,14 @@ func (s *Server) getRouter() *chi.Mux {
 	)
 	prometheus.MustRegister(requestCounter)
 	router.Use(func(next http.Handler) http.Handler {
-		return promhttp.InstrumentHandlerCounter(requestCounter, next)
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path == "/metrics" {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			promhttp.InstrumentHandlerCounter(requestCounter, next).ServeHTTP(w, r)
+		})
 	})
 
 	// Profiler
