@@ -1,0 +1,39 @@
+basePath: /
+info:
+  contact:
+    email: feynmaz@gmail.com
+    name: Nikolai Mazein
+  description: This is a service which feeds prometheus with metrics.
+  title: Promfeeder API
+  version: "1.0"
+paths:
+  /get/{code}:
+    get:
+      parameters:
+      - description: Код ответа
+        in: path
+        name: code
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: success
+        "400":
+          description: error
+        "401":
+          description: error
+        "403":
+          description: error
+        "404":
+          description: error
+        "429":
+          description: error
+        "500":
+          description: error
+        "503":
+          description: error
+      summary: Получить ответ.
+swagger: "2.0"
+x-servers:
+- description: dev
+  url: https://promfeeder.testshift.webtm.ru/

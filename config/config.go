@@ -8,14 +8,16 @@ import (
 )
 
 type Config struct {
-	Server   Server `json:"server" envPrefix:"SERVER_"`
-	LogLevel int    `json:"log_level" env:"LOG_LEVEL" envDefault:"1"`
+	AppBasePath string `env:"APP_BASE_PATH"`
+	AppBaseURL  string `env:"APP_BASE_URL"`
+	Server      Server `envPrefix:"SERVER_"`
+	LogLevel    int    `env:"LOG_LEVEL" envDefault:"1"`
 }
 
 type Server struct {
-	Port         int           `json:"port" env:"PORT" envDefault:"8080"`
-	ReadTimeout  time.Duration `json:"read_timeout" env:"READ_TIMEOUT" envDefault:"5s"`
-	WriteTimeout time.Duration `json:"write_timeout" env:"WRITE_TIMEOUT" envDefault:"5s"`
+	Port         int           `env:"PORT" envDefault:"8080"`
+	ReadTimeout  time.Duration `env:"READ_TIMEOUT" envDefault:"5s"`
+	WriteTimeout time.Duration `env:"WRITE_TIMEOUT" envDefault:"5s"`
 }
 
 func GetDefault() (*Config, error) {

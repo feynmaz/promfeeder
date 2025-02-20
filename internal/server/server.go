@@ -10,8 +10,11 @@ import (
 	"github.com/feynmaz/pkg/http/middleware"
 	"github.com/feynmaz/pkg/logger"
 	"github.com/feynmaz/promfeeder/config"
+	docs "github.com/feynmaz/promfeeder/openapi"
 	"github.com/go-chi/chi/v5"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 type Server struct {
@@ -20,6 +23,7 @@ type Server struct {
 }
 
 func New(cfg *config.Config, logger *logger.Logger) *Server {
+
 	return &Server{
 		cfg:    cfg,
 		logger: logger,
@@ -39,13 +43,31 @@ func (s *Server) Run(ctx context.Context) error {
 	return srv.ListenAndServe()
 }
 
+// @title Promfeeder API
+// @version 1.0
+// @description This is a service which feeds prometheus with metrics.
+// @contact.name Nikolai Mazein
+// @contact.email feynmaz@gmail.com
+// @BasePath /
+// @x-servers [{"url": "https://promfeeder.testshift.webtm.ru/", "description": "dev"}]
 func (s *Server) getRouter() *chi.Mux {
 	router := chi.NewMux()
 
 	// Middleware
 	router.Use(middleware.RequestIDMiddleware)
 	router.Use(middleware.NewLoggingMiddleware(s.logger))
-	// router.Use(s.TelemetryMiddleware)
+
+	requestCounter := prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "http_requests_total",
+			Help: "Total number of HTTP requests by status code",
+		},
+		[]string{"code"},
+	)
+	prometheus.MustRegister(requestCounter)
+	router.Use(func(next http.Handler) http.Handler {
+		return promhttp.InstrumentHandlerCounter(requestCounter, next)
+	})
 
 	// Profiler
 	router.HandleFunc("/debug/pprof/", pprof.Index)
@@ -59,6 +81,20 @@ func (s *Server) getRouter() *chi.Mux {
 
 	// Metrics
 	router.Handle("/metrics", promhttp.Handler())
+
+	// Swagger
+	docs.SwaggerInfo.BasePath = s.cfg.AppBasePath
+	router.Get("/swagger/*", func(w http.ResponseWriter, r *http.Request) {
+		swaggerHandler := httpSwagger.Handler(
+			httpSwagger.URL(
+				fmt.Sprintf("%s/swagger/doc.json", s.cfg.AppBaseURL),
+			),
+		)
+		swaggerHandler.ServeHTTP(w, r)
+	})
+
+	// Methods
+	router.Get("/get/{code}", s.Get)
 
 	return router
 }

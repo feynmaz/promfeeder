@@ -1,0 +1,61 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is a service which feeds prometheus with metrics.",
+        "title": "Promfeeder API",
+        "contact": {
+            "name": "Nikolai Mazein",
+            "email": "feynmaz@gmail.com"
+        },
+        "version": "1.0"
+    },
+    "basePath": "/",
+    "paths": {
+        "/get/{code}": {
+            "get": {
+                "summary": "Получить ответ.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Код ответа",
+                        "name": "code",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success"
+                    },
+                    "400": {
+                        "description": "error"
+                    },
+                    "401": {
+                        "description": "error"
+                    },
+                    "403": {
+                        "description": "error"
+                    },
+                    "404": {
+                        "description": "error"
+                    },
+                    "429": {
+                        "description": "error"
+                    },
+                    "500": {
+                        "description": "error"
+                    },
+                    "503": {
+                        "description": "error"
+                    }
+                }
+            }
+        }
+    },
+    "x-servers": [
+        {
+            "description": "dev",
+            "url": "https://promfeeder.testshift.webtm.ru/"
+        }
+    ]
+}
